@@ -15,17 +15,21 @@ from weakref import WeakValueDictionary
 
 # dependencies
 import iso8601
-from BeautifulSoup import BeautifulSoup
+#from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 
 __author__ = 'John O\'Connor'
 __all__ = ('Sherdog', 'Event', 'Fight', 'Fighter', 'Organization')
 
 SHERDOG_URL = 'http://www.sherdog.com'
 
-_EVENT_MATCH_RE = re.compile('module event_match')
+_EVENT_MATCH_RE = 'module event_match'
+#_EVENT_MATCH_RE = re.compile('module event_match')
 _EVEN_ODD_RE = re.compile('^(even)|(odd)$')
-_FIGHTER_LEFT_RE = re.compile('fighter left_side')
-_FIGHTER_RIGHT_RE = re.compile('fighter right_side')
+#_FIGHTER_LEFT_RE = re.compile('fighter left_side')
+_FIGHTER_LEFT_RE = 'fighter left_side'
+#_FIGHTER_RIGHT_RE_ = re.compile('fighter right_side')
+_FIGHTER_RIGHT_RE = 'fighter right_side'
 _FINAL_RESULT_RE = re.compile('^final_result')
 _SUB_EVENT_RE = re.compile('subEvent')
 
@@ -217,9 +221,9 @@ class Event(LazySherdogObject):
         return timedelta(minutes=int(minutes), seconds=int(seconds))
 
     def _fight_winner(self, result, left, right):
-        if result.text == u'draw':
+        if result == u'draw':
             return None
-        elif result.text == u'win':
+        elif result == u'win':
             return left
         else:
             return right
@@ -245,7 +249,7 @@ class Event(LazySherdogObject):
         info = dict(zip(keys, values))
         time = self._parse_fight_time(info['time'])
         return Fight(event=self, fighters=fighters,
-                winner=self._fight_winner(result, left_fighter, right_fighter),
+                winner=self._fight_winner(result.text.strip(), left_fighter, right_fighter),
                 match=int(info['match']), method=info['method'], referee=info['referee'],
                 round=int(info['round']), time=time)
 
@@ -263,7 +267,7 @@ class Event(LazySherdogObject):
 
         return Fight(event=self,
                      fighters=fighters,
-                     winner=self._fight_winner(result, left_fighter, right_fighter),
+                     winner=self._fight_winner(result.text.strip(), left_fighter, right_fighter),
                      match=int(td[0].text),
                      method=td[4].contents[0],
                      referee=td[4].contents[-1].text,
@@ -316,7 +320,7 @@ class Sherdog(object):
     def fetch_and_parse_url(cls, path):
         assert path.startswith('/')
         result = cls.fetch_url(path)
-        soup = BeautifulSoup(result)
+        soup = BeautifulSoup(result,"html5lib")
         return soup
 
     @classmethod
