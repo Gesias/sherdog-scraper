@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #!/usr/bin/env python
 
 from datetime import date, timedelta
@@ -95,6 +96,16 @@ class TestSherdog(TestCase):
         results = Sherdog.search_fighters('junior dos santos')
         self.assertGreaterEqual(len(results), 1)
         self.assertEqual(results[0], Fighter(JUNIOR_DOS_SANTOS_ID))
+
+    def test_get_event_before(self):
+        # Just a test to handle events that has not yet occured. This will have to be replaced by a local xml copy to stay relevant
+        event = Sherdog.get_event('UFC-on-Fox-12-Lawler-vs-Brown-37719')
+        self.assertEquals(event.name, u'UFC on Fox 12 - Lawler vs. Brown')
+        self.assertEquals(event.organization, UFC)
+        self.assertEquals(event.date, date(2014, 7, 26))
+        self.assertEquals(event.venue, u'SAP Center')
+        self.assertEquals(event.location, u'San Jose, California, United States')
+        self.assertEquals(len(event.fights), 12)
 
 
 if __name__ == '__main__':

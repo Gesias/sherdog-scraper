@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 API for scraping information about MMA fighters
 and events from Sherdog.com
@@ -8,10 +9,12 @@ import json
 import math
 import re
 import urllib
-
 from collections import namedtuple
 from datetime import timedelta, datetime
 from weakref import WeakValueDictionary
+import logging
+
+log = logging.getLogger( __name__ )
 
 # dependencies
 import iso8601
@@ -243,15 +246,20 @@ class Event(LazySherdogObject):
                     round=None, time=None)
 
         # parse match, method, ref, round, time
-        td = dom.find('table', {'class':'resume'}).findAll('td')
-        keys = [x.contents[0].text.lower() for x in td]
-        values = [x.contents[-1].lstrip() for x in td]
-        info = dict(zip(keys, values))
-        time = self._parse_fight_time(info['time'])
+        time = 0
+        info = {}
+        try:
+            td = dom.find('table', {'class':'resume'}).findAll('td')
+            keys = [x.contents[0].text.lower() for x in td]
+            values = [x.contents[-1].lstrip() for x in td]
+            info = dict(zip(keys, values))
+            time = self._parse_fight_time(info.get('time',0))
+        except AttributeError,msg:
+            log.warn('No result found')
         return Fight(event=self, fighters=fighters,
                 winner=self._fight_winner(result.text.strip(), left_fighter, right_fighter),
-                match=int(info['match']), method=info['method'], referee=info['referee'],
-                round=int(info['round']), time=time)
+                match=int(info.get('match',0)), method=info.get('method',None), referee=info.get('referee',None),
+                round=int(info.get('round',0)), time=time)
 
     def _parse_sub_fight(self, row):
         td = row.findAll('td')
